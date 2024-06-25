@@ -15,13 +15,13 @@ import { getAnalytics } from "firebase/analytics";
 import { FirebaseOptions } from "firebase/app";
 
 const config: FirebaseOptions = {
-  apiKey: "AIzaSyDnVqs8TBiIicdOcqb5WWqCUDB_GMywzs4",
-  authDomain: "venefish-4b609.firebaseapp.com",
-  projectId: "venefish-4b609",
-  storageBucket: "venefish-4b609.appspot.com",
-  messagingSenderId: "976336889830",
-  appId: "1:976336889830:web:030a5e0b9e6053da961827",
-  measurementId: "G-GFMBQQW6PC",
+  apiKey: "AIzaSyA7nnCLOZlVVDzDWAajGCZVXxqyFf4M1vg",
+  authDomain: "travel-postcards.firebaseapp.com",
+  projectId: "travel-postcards",
+  storageBucket: "travel-postcards.appspot.com",
+  messagingSenderId: "875540562127",
+  appId: "1:875540562127:web:f54adf57e310f2da7ab7ba",
+  measurementId: "G-WRY6WNH759"
 };
 
 const FirebaseProviderSDKs: FC<{ children: ReactNode }> = ({ children }) => {
@@ -60,3 +60,5 @@ export const MyFirebaseProvider: FC<{ children: ReactNode }> = ({
     </>
   );
 };
+
+

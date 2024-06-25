@@ -1,6 +1,14 @@
 'use client';
 
-import * as React from "react";
+import * as React from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from 'reactfire';
+import { doc, setDoc } from 'firebase/firestore';
+import { useMyFirestore } from '@/lib/useMyFirestore';
 import {
   Form,
   FormControl,
@@ -9,16 +17,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { FC, useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "reactfire";
+} from '@/components/ui/form';
+import { toast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -30,33 +32,42 @@ interface SignUpFormProps {
   onSignUp?: () => void;
 }
 
-export const SignUpForm: FC<SignUpFormProps> = ({ onShowLogin, onSignUp }) => {
+export const SignUpForm: React.FC<SignUpFormProps> = ({ onShowLogin, onSignUp }) => {
   const [isLoading, setIsLoading] = useState(false);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const auth = useAuth();
+  const firestore = useMyFirestore();  // Utilisez le hook ici
 
   const signup = async ({ email, password }: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      const user = await createUserWithEmailAndPassword(auth, email, password);
-      if (user?.user.uid && user.user.email) {
-        // create user in firestore here if you want
-        toast({ title: "Account created!" });
+      console.log('Attempting to create user with email:', email);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('User created with Firebase Auth');
+      const user = userCredential.user;
+      if (user?.uid) {
+        console.log(`User UID: ${user.uid}`);
+        await setDoc(doc(firestore, 'users', user.uid), {
+          email: user.email,
+          createdAt: new Date(),  // Example additional field
+        });
+        console.log('User document created in Firestore');
+        toast({ title: 'Account created and user added to Firestore!' });
         onSignUp?.();
       }
     } catch (err: any) {
-      if ("code" in err && err.code.includes("already")) {
-        toast({ title: "User already exists" });
+      console.error('Error signing up:', err);
+      if ('code' in err && err.code.includes('already')) {
+        toast({ title: 'User already exists' });
       } else {
-        toast({ title: "Error signing up", description: `${err}` });
+        toast({ title: 'Error signing up', description: `${err}` });
       }
     } finally {
       setIsLoading(false);
@@ -104,9 +115,8 @@ export const SignUpForm: FC<SignUpFormProps> = ({ onShowLogin, onSignUp }) => {
           </fieldset>
         </form>
       </Form>
-
       <p className="mt-4 text-sm">
-        Already joined?{" "}
+        Already joined?{' '}
         <Button variant="link" onClick={onShowLogin}>
           Sign in instead.
         </Button>
